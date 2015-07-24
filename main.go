@@ -10,7 +10,7 @@ type column struct {
 	name   string
 }
 
-func newcolumn(name string) *column {
+func newColumn(name string) *column {
 	return &column{parent: "", name: name}
 }
 
