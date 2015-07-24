@@ -57,6 +57,33 @@ func (r *relation) findColumn(name string) int {
 	return -1
 }
 
+type table struct {
+	relation
+	name string
+}
+
+func newTable(name string, cols []*column) *table {
+	var t *table
+	t.name = name
+	t.columns = cols
+	t.tuples = []*tuple{}
+	return t
+}
+
+func create(name string, colNames []string) *table {
+	cols := []*column{}
+	for _, cn := range colNames {
+		cols = append(cols, newColumn(cn))
+	}
+	// FIXME: register table to a global dictionary
+	return newTable(name, cols)
+}
+
+func (t *table) insert(vals []interface{}) *table {
+	t.tuples = append(t.tuples, newTuple(vals))
+	return t
+}
+
 func main() {
 
 }
