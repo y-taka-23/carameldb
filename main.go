@@ -5,6 +5,32 @@ import (
 	"fmt"
 )
 
+func main() {
+
+	items := create(
+		"items",
+		[]string{"item_id", "item_name", "type_id", "price"},
+	)
+	items.insert(1, "apple", 1, 300)
+	items.insert(2, "orange", 1, 130)
+	items.insert(3, "cabbage", 2, 200)
+	items.insert(4, "seaweed", nil, 250)
+	items.insert(5, "mushroom", 3, 180)
+
+	types := create(
+		"types",
+		[]string{"type_id", "type_name"},
+	)
+	types.insert(1, "fruit")
+	types.insert(2, "vegetable")
+
+	fmt.Println(items)
+	fmt.Println(from("items"))
+	fmt.Println(from("items").selectQ("item_name", "price"))
+	fmt.Println(from("items").lessThan("price", 250))
+	fmt.Println(from("items").leftJoin("types", "type_id"))
+}
+
 var tables = map[string]*table{}
 
 type column struct {
@@ -175,8 +201,4 @@ func (q *query) lessThan(colName string, n int) *query {
 		}
 	}
 	return newQuery(q.columns, newTups)
-}
-
-func main() {
-
 }
