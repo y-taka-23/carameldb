@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-var tables map[string]*table
+var tables = map[string]*table{}
 
 type column struct {
 	parent string
@@ -67,7 +67,7 @@ type table struct {
 }
 
 func newTable(name string, cols []*column) *table {
-	var t *table
+	t := &table{}
 	t.name = name
 	t.columns = cols
 	t.tuples = []*tuple{}
@@ -94,7 +94,7 @@ type query struct {
 }
 
 func newQuery(cols []*column, tups []*tuple) *query {
-	var q *query
+	q := &query{}
 	q.columns = cols
 	q.tuples = tups
 	return q
