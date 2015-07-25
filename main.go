@@ -165,7 +165,9 @@ func (q *query) leftJoin(tableName, colName string) *query {
 	t := tables[tableName]
 	newCols := []*column{}
 	newCols = append(newCols, q.columns...)
-	newCols = append(newCols, t.columns...)
+	for _, c := range t.columns {
+		newCols = append(newCols, newColumn(tableName, c.name))
+	}
 	lIdx, rIdx := q.findColumn(colName), t.findColumn(colName)
 	if len(q.columns) <= lIdx || len(t.columns) <= rIdx {
 		return newQuery(newCols, []*tuple{})
@@ -176,17 +178,19 @@ func (q *query) leftJoin(tableName, colName string) *query {
 			continue
 		}
 		keyVal := lTup.values[lIdx]
-		// the remaining values are filled by nil
-		vals := make([]interface{}, len(newCols))
-		copy(vals, lTup.values)
+		vals := []interface{}{}
+		vals = append(vals, lTup.values...)
 		for _, rTup := range t.tuples {
 			if len(rTup.values) <= rIdx {
 				continue
 			}
 			if rTup.values[rIdx] == keyVal {
-				vals = append(vals, rTup.values)
+				vals = append(vals, rTup.values...)
 				break // join at most one tuple from the rightside table
 			}
+		}
+		for len(vals) < len(newCols) {
+			vals = append(vals, nil)
 		}
 		newTups = append(newTups, newTuple(vals))
 	}
