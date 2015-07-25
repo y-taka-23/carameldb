@@ -38,8 +38,8 @@ type column struct {
 	name   string
 }
 
-func newColumn(name string) *column {
-	return &column{parent: "", name: name}
+func newColumn(parent, name string) *column {
+	return &column{parent: parent, name: name}
 }
 
 type tuple struct {
@@ -103,7 +103,7 @@ func newTable(name string, cols []*column) *table {
 func create(name string, colNames []string) *table {
 	cols := []*column{}
 	for _, cn := range colNames {
-		cols = append(cols, newColumn(cn))
+		cols = append(cols, newColumn("", cn))
 	}
 	t := newTable(name, cols)
 	tables[name] = t
@@ -128,17 +128,22 @@ func newQuery(cols []*column, tups []*tuple) *query {
 
 func from(tableName string) *query {
 	t := tables[tableName]
-	newCols := make([]*column, len(t.columns))
-	copy(newCols, t.columns)
+	newCols := []*column{}
+	for _, c := range t.columns {
+		newCols = append(newCols, newColumn(t.name, c.name))
+	}
 	return newQuery(newCols, t.tuples)
 }
 
 func (q *query) selectQ(colNames ...string) *query {
-	newCols := []*column{}
 	idxs := []int{}
+	newCols := []*column{}
 	for _, cn := range colNames {
-		newCols = append(newCols, newColumn(cn))
-		idxs = append(idxs, q.findColumn(cn))
+		idx := q.findColumn(cn)
+		idxs = append(idxs, idx)
+		if idx < len(q.columns) {
+			newCols = append(newCols, q.columns[idx])
+		}
 	}
 	newTups := []*tuple{}
 	for _, tup := range q.tuples {
