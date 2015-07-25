@@ -84,7 +84,7 @@ func create(name string, colNames []string) *table {
 	return t
 }
 
-func (t *table) insert(vals []interface{}) *table {
+func (t *table) insert(vals ...interface{}) *table {
 	t.tuples = append(t.tuples, newTuple(vals))
 	return t
 }
