@@ -180,13 +180,16 @@ func (q *query) leftJoin(tableName, colName string) *query {
 		keyVal := lTup.values[lIdx]
 		vals := []interface{}{}
 		vals = append(vals, lTup.values...)
-		for _, rTup := range t.tuples {
-			if len(rTup.values) <= rIdx {
-				continue
-			}
-			if rTup.values[rIdx] == keyVal {
-				vals = append(vals, rTup.values...)
-				break // join at most one tuple from the rightside table
+		// join at non-nil values only
+		if keyVal != nil {
+			for _, rTup := range t.tuples {
+				if len(rTup.values) <= rIdx {
+					continue
+				}
+				if rTup.values[rIdx] == keyVal {
+					vals = append(vals, rTup.values...)
+					break // join at most one tuple from the rightside table
+				}
 			}
 		}
 		for len(vals) < len(newCols) {
