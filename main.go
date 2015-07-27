@@ -6,36 +6,37 @@ import (
 )
 
 func main() {
+
+	items := create(
+		"items",
+		[]string{"item_id", "item_name", "type_id", "price"},
+	)
+	items.insert(1, "apple", 1, 300)
+	items.insert(2, "orange", 1, 130)
+	items.insert(3, "cabbage", 2, 200)
+	items.insert(4, "saury", 3, 220)
+	items.insert(5, "seaweed", nil, 250)
+	items.insert(6, "mushroom", 3, 180)
+
+	types := create(
+		"types",
+		[]string{"type_id", "type_name"},
+	)
+	types.insert(1, "fruit")
+	types.insert(2, "vegetable")
+	types.insert(3, "fish")
+
+	fmt.Println(items)
 	/*
-		items := create(
-			"items",
-			[]string{"item_id", "item_name", "type_id", "price"},
-		)
-		items.insert(1, "apple", 1, 300)
-		items.insert(2, "orange", 1, 130)
-		items.insert(3, "cabbage", 2, 200)
-		items.insert(4, "saury", 3, 220)
-		items.insert(5, "seaweed", nil, 250)
-		items.insert(6, "mushroom", 3, 180)
-
-		types := create(
-			"types",
-			[]string{"type_id", "type_name"},
-		)
-		types.insert(1, "fruit")
-		types.insert(2, "vegetable")
-		types.insert(3, "fish")
-
-		fmt.Println(items)
 		fmt.Println(from("items"))
 		fmt.Println(from("items").selectQ("item_name", "price"))
 		fmt.Println(from("items").lessThan("price", 250))
 		fmt.Println(from("items").leftJoin("types", "type_id"))
 		fmt.Println(
 			from(
-				from("items").lessThan(250),
+				from("items").lessThan("price", 250),
 			).leftJoin(
-				from("types").lessThan(3), "type_id",
+				from("types").lessThan("type_id", 3), "type_id",
 			),
 		)
 	*/
@@ -43,14 +44,18 @@ func main() {
 
 type tableName string
 
+func (tn tableName) String() string {
+	return string(tn)
+}
+
 var tables = map[tableName]*table{}
 
 type column struct {
-	parent string
+	parent tableName
 	name   string
 }
 
-func newColumn(parent, name string) *column {
+func newColumn(parent tableName, name string) *column {
 	return &column{parent: parent, name: name}
 }
 
@@ -63,24 +68,24 @@ func newTuple(vals []interface{}) *tuple {
 }
 
 type queryObj interface {
-	leftJoin(qo queryObjer) *queryObj
-	lessThan(colName string, n int) *queryObj
-	selectQ(colNames ...string) *queryObj
+	leftJoin(tblName tableName, colName string) queryObj
+	lessThan(colName string, n int) queryObj
+	selectQ(colNames ...string) queryObj
 }
 
 type queryObjer interface {
 	queryObj() queryObj
 }
 
-func (s tableName) queryObj() *queryObj {
-	return tables[s]
+func (s tableName) queryObj() queryObj {
+	return *tables[s]
 }
 
-func (qo *queryObj) queryObj() *queryObj {
+func (qo relation) queryObj() queryObj {
 	return qo
 }
 
-func from(q *queryObjer) *queryObj {
+func from(q queryObjer) queryObj {
 	return q.queryObj()
 }
 
@@ -104,7 +109,7 @@ func (r *relation) findColumn(name string) int {
 	return len(r.columns)
 }
 
-func (r *relation) selectQ(colNames ...string) *queryObj {
+func (r relation) selectQ(colNames ...string) queryObj {
 	idxs := []int{}
 	newCols := []*column{}
 	for _, cn := range colNames {
@@ -130,7 +135,7 @@ func (r *relation) selectQ(colNames ...string) *queryObj {
 	return newRelation(newCols, newTups)
 }
 
-func (r *relation) leftJoin(tblName, colName string) *queryObj {
+func (r relation) leftJoin(tblName tableName, colName string) queryObj {
 	t := tables[tblName]
 	newCols := []*column{}
 	newCols = append(newCols, r.columns...)
@@ -169,7 +174,7 @@ func (r *relation) leftJoin(tblName, colName string) *queryObj {
 	return newRelation(newCols, newTups)
 }
 
-func (r *relation) lessThan(colName string, n int) *queryObj {
+func (r relation) lessThan(colName string, n int) queryObj {
 	idx := r.findColumn(colName)
 	if idx >= len(r.columns) {
 		return newRelation(r.columns, []*tuple{})
@@ -181,7 +186,7 @@ func (r *relation) lessThan(colName string, n int) *queryObj {
 			newTups = append(newTups, tup)
 		}
 	}
-	return newRelation(q.columns, newTups)
+	return newRelation(r.columns, newTups)
 }
 
 func (r *relation) String() string {
@@ -189,7 +194,7 @@ func (r *relation) String() string {
 	for _, c := range r.columns {
 		buf.WriteByte('|')
 		if c.parent != "" {
-			buf.WriteString(c.parent)
+			buf.WriteString(c.parent.String())
 			buf.WriteByte('.')
 		}
 		buf.WriteString(c.name)
@@ -207,7 +212,7 @@ func (r *relation) String() string {
 
 type table struct {
 	relation
-	name string
+	name tableName
 }
 
 func newTable(name tableName, cols []*column) *table {
