@@ -27,18 +27,19 @@ func main() {
 	types.insert(3, "fish")
 
 	fmt.Println(items)
+	var tblName tableName = "items"
+	fmt.Println(from(tblName))
 	/*
-		fmt.Println(from("items"))
 		fmt.Println(from("items").selectQ("item_name", "price"))
-		fmt.Println(from("items").lessThan("price", 250))
-		fmt.Println(from("items").leftJoin("types", "type_id"))
-		fmt.Println(
-			from(
-				from("items").lessThan("price", 250),
-			).leftJoin(
-				from("types").lessThan("type_id", 3), "type_id",
-			),
-		)
+			fmt.Println(from("items").lessThan("price", 250))
+			fmt.Println(from("items").leftJoin("types", "type_id"))
+			fmt.Println(
+				from(
+					from("items").lessThan("price", 250),
+				).leftJoin(
+					from("types").lessThan("type_id", 3), "type_id",
+				),
+			)
 	*/
 }
 
@@ -67,13 +68,30 @@ func newTuple(vals []interface{}) *tuple {
 	return &tuple{values: vals}
 }
 
-func from(s tableName) *table {
-	return tables[s]
-}
-
 type relation struct {
 	columns []*column
 	tuples  []*tuple
+}
+
+type relationer interface {
+	relation() *relation
+}
+
+func (tblName tableName) relation() *relation {
+	t := tables[tblName]
+	cols := []*column{}
+	for _, c := range t.columns {
+		cols = append(cols, newColumn(tblName, c.name))
+	}
+	return newRelation(cols, t.tuples)
+}
+
+func (r *relation) relation() *relation {
+	return r
+}
+
+func from(rel relationer) *relation {
+	return rel.relation()
 }
 
 func newRelation(cols []*column, tups []*tuple) *relation {
