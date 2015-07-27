@@ -16,7 +16,7 @@ func main() {
 	items.insert(3, "cabbage", 2, 200)
 	items.insert(4, "saury", 3, 220)
 	items.insert(5, "seaweed", nil, 250)
-	items.insert(6, "mushroom", 3, 180)
+	items.insert(6, "mushroom", 4, 180)
 
 	types := create(
 		"types",
@@ -27,36 +27,29 @@ func main() {
 	types.insert(3, "fish")
 
 	fmt.Println(items)
-	var tblName tableName = "items"
-	fmt.Println(from(tblName))
+	fmt.Println(from("items"))
+	fmt.Println(from("items").selectQ("item_name", "price"))
+	fmt.Println(from("items").lessThan("price", 250))
+	fmt.Println(from("items").leftJoin("types", "type_id"))
 	/*
-		fmt.Println(from("items").selectQ("item_name", "price"))
-			fmt.Println(from("items").lessThan("price", 250))
-			fmt.Println(from("items").leftJoin("types", "type_id"))
-			fmt.Println(
-				from(
-					from("items").lessThan("price", 250),
-				).leftJoin(
-					from("types").lessThan("type_id", 3), "type_id",
-				),
-			)
+		fmt.Println(
+			from(
+				from("items").lessThan("price", 250),
+			).leftJoin(
+				from("types").lessThan("type_id", 3), "type_id",
+			),
+		)
 	*/
 }
 
-type tableName string
-
-func (tn tableName) String() string {
-	return string(tn)
-}
-
-var tables = map[tableName]*table{}
+var tables = map[string]*table{}
 
 type column struct {
-	parent tableName
+	parent string
 	name   string
 }
 
-func newColumn(parent tableName, name string) *column {
+func newColumn(parent string, name string) *column {
 	return &column{parent: parent, name: name}
 }
 
@@ -73,29 +66,23 @@ type relation struct {
 	tuples  []*tuple
 }
 
-type relationer interface {
-	relation() *relation
+func newRelation(cols []*column, tups []*tuple) *relation {
+	return &relation{columns: cols, tuples: tups}
 }
 
-func (tblName tableName) relation() *relation {
+// TODO: rewrite by interfaces
+//       this implementation is to use immediate string values as arguments
+func from(x interface{}) *relation {
+	if r, ok := x.(*relation); ok {
+		return r
+	}
+	tblName := fmt.Sprint(x)
 	t := tables[tblName]
 	cols := []*column{}
 	for _, c := range t.columns {
 		cols = append(cols, newColumn(tblName, c.name))
 	}
 	return newRelation(cols, t.tuples)
-}
-
-func (r *relation) relation() *relation {
-	return r
-}
-
-func from(rel relationer) *relation {
-	return rel.relation()
-}
-
-func newRelation(cols []*column, tups []*tuple) *relation {
-	return &relation{columns: cols, tuples: tups}
 }
 
 func (r *relation) findColumn(name string) int {
@@ -135,7 +122,7 @@ func (r *relation) selectQ(colNames ...string) *relation {
 	return newRelation(newCols, newTups)
 }
 
-func (r *relation) leftJoin(tblName tableName, colName string) *relation {
+func (r *relation) leftJoin(tblName string, colName string) *relation {
 	t := tables[tblName]
 	newCols := []*column{}
 	newCols = append(newCols, r.columns...)
@@ -194,7 +181,7 @@ func (r *relation) String() string {
 	for _, c := range r.columns {
 		buf.WriteByte('|')
 		if c.parent != "" {
-			buf.WriteString(c.parent.String())
+			buf.WriteString(c.parent)
 			buf.WriteByte('.')
 		}
 		buf.WriteString(c.name)
@@ -212,10 +199,10 @@ func (r *relation) String() string {
 
 type table struct {
 	relation
-	name tableName
+	name string
 }
 
-func newTable(name tableName, cols []*column) *table {
+func newTable(name string, cols []*column) *table {
 	t := &table{}
 	t.name = name
 	t.columns = cols
@@ -223,7 +210,7 @@ func newTable(name tableName, cols []*column) *table {
 	return t
 }
 
-func create(name tableName, colNames []string) *table {
+func create(name string, colNames []string) *table {
 	cols := []*column{}
 	for _, cn := range colNames {
 		cols = append(cols, newColumn("", cn))
