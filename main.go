@@ -67,26 +67,8 @@ func newTuple(vals []interface{}) *tuple {
 	return &tuple{values: vals}
 }
 
-type queryObj interface {
-	leftJoin(tblName tableName, colName string) queryObj
-	lessThan(colName string, n int) queryObj
-	selectQ(colNames ...string) queryObj
-}
-
-type queryObjer interface {
-	queryObj() queryObj
-}
-
-func (s tableName) queryObj() queryObj {
-	return *tables[s]
-}
-
-func (qo relation) queryObj() queryObj {
-	return qo
-}
-
-func from(q queryObjer) queryObj {
-	return q.queryObj()
+func from(s tableName) *table {
+	return tables[s]
 }
 
 type relation struct {
@@ -109,7 +91,7 @@ func (r *relation) findColumn(name string) int {
 	return len(r.columns)
 }
 
-func (r relation) selectQ(colNames ...string) queryObj {
+func (r *relation) selectQ(colNames ...string) *relation {
 	idxs := []int{}
 	newCols := []*column{}
 	for _, cn := range colNames {
@@ -135,7 +117,7 @@ func (r relation) selectQ(colNames ...string) queryObj {
 	return newRelation(newCols, newTups)
 }
 
-func (r relation) leftJoin(tblName tableName, colName string) queryObj {
+func (r *relation) leftJoin(tblName tableName, colName string) *relation {
 	t := tables[tblName]
 	newCols := []*column{}
 	newCols = append(newCols, r.columns...)
@@ -174,7 +156,7 @@ func (r relation) leftJoin(tblName tableName, colName string) queryObj {
 	return newRelation(newCols, newTups)
 }
 
-func (r relation) lessThan(colName string, n int) queryObj {
+func (r *relation) lessThan(colName string, n int) *relation {
 	idx := r.findColumn(colName)
 	if idx >= len(r.columns) {
 		return newRelation(r.columns, []*tuple{})
