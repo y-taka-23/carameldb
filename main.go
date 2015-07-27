@@ -41,7 +41,9 @@ func main() {
 	*/
 }
 
-var tables = map[string]*table{}
+type tableName string
+
+var tables = map[tableName]*table{}
 
 type column struct {
 	parent string
@@ -69,8 +71,6 @@ type queryObj interface {
 type queryObjer interface {
 	queryObj() queryObj
 }
-
-type tableName string
 
 func (s tableName) queryObj() *queryObj {
 	return tables[s]
