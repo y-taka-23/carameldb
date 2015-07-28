@@ -31,15 +31,13 @@ func main() {
 	fmt.Println(from("items").selectQ("item_name", "price"))
 	fmt.Println(from("items").lessThan("price", 250))
 	fmt.Println(from("items").leftJoin("types", "type_id"))
-	/*
-		fmt.Println(
-			from(
-				from("items").lessThan("price", 250),
-			).leftJoin(
-				from("types").lessThan("type_id", 3), "type_id",
-			),
-		)
-	*/
+	fmt.Println(
+		from(
+			from("items").lessThan("price", 250),
+		).leftJoin(
+			from("types").lessThan("type_id", 3), "type_id",
+		),
+	)
 }
 
 var tables = map[string]*table{}
@@ -122,15 +120,13 @@ func (r *relation) selectQ(colNames ...string) *relation {
 	return newRelation(newCols, newTups)
 }
 
-func (r *relation) leftJoin(tblName string, colName string) *relation {
-	t := tables[tblName]
+func (r *relation) leftJoin(x interface{}, colName string) *relation {
+	j := from(x)
 	newCols := []*column{}
 	newCols = append(newCols, r.columns...)
-	for _, c := range t.columns {
-		newCols = append(newCols, newColumn(tblName, c.name))
-	}
-	rIdx, tIdx := r.findColumn(colName), t.findColumn(colName)
-	if len(r.columns) <= rIdx || len(t.columns) <= tIdx {
+	newCols = append(newCols, j.columns...)
+	rIdx, jIdx := r.findColumn(colName), j.findColumn(colName)
+	if len(r.columns) <= rIdx || len(j.columns) <= jIdx {
 		return newRelation(newCols, []*tuple{})
 	}
 	newTups := []*tuple{}
@@ -143,12 +139,12 @@ func (r *relation) leftJoin(tblName string, colName string) *relation {
 		vals = append(vals, rTup.values...)
 		// join at non-nil values only
 		if keyVal != nil {
-			for _, tTup := range t.tuples {
-				if len(tTup.values) <= tIdx {
+			for _, jTup := range j.tuples {
+				if len(jTup.values) <= jIdx {
 					continue
 				}
-				if tTup.values[tIdx] == keyVal {
-					vals = append(vals, tTup.values...)
+				if jTup.values[jIdx] == keyVal {
+					vals = append(vals, jTup.values...)
 					break // join at most one tuple from the rightside table
 				}
 			}
