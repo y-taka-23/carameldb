@@ -67,171 +67,183 @@ func TestInsertOrdered(t *testing.T) {
 
 func TestFromEmpty(t *testing.T) {
 	tbl := create("TestFromEmpty", []string{"id"})
-	q := from("TestFromEmpty")
-	assert.Equal(t, 1, len(q.columns))
-	assert.Equal(t, newColumn("TestFromEmpty", "id"), q.columns[0])
-	assert.Equal(t, tbl.columns[0].name, q.columns[0].name)
-	assert.Equal(t, 0, len(q.tuples))
+	r := from("TestFromEmpty")
+	assert.Equal(t, 1, len(r.columns))
+	assert.Equal(t, newColumn("TestFromEmpty", "id"), r.columns[0])
+	assert.Equal(t, tbl.columns[0].name, r.columns[0].name)
+	assert.Equal(t, 0, len(r.tuples))
 }
 
 func TestFromAfterInsert(t *testing.T) {
 	tbl := create("TestFromAfterInsert", []string{"id"})
 	tbl.insert(0).insert(1).insert(2)
-	q := from("TestFromAfterInsert")
-	assert.Equal(t, 1, len(q.columns))
-	assert.Equal(t, newColumn("TestFromAfterInsert", "id"), q.columns[0])
-	assert.Equal(t, tbl.columns[0].name, q.columns[0].name)
-	assert.Equal(t, tbl.tuples, q.tuples)
+	r := from("TestFromAfterInsert")
+	assert.Equal(t, 1, len(r.columns))
+	assert.Equal(t, newColumn("TestFromAfterInsert", "id"), r.columns[0])
+	assert.Equal(t, tbl.columns[0].name, r.columns[0].name)
+	assert.Equal(t, tbl.tuples, r.tuples)
 }
 
 func TestSelectQNone(t *testing.T) {
-	q := &query{}
-	q.columns = []*column{newColumn("", "id"), newColumn("", "str")}
-	q.tuples = []*tuple{
-		&tuple{values: []interface{}{0, "zero"}},
-		&tuple{values: []interface{}{1, "one"}},
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "str")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, "zero"}},
+			&tuple{values: []interface{}{1, "one"}},
+		},
 	}
-	res := q.selectQ()
+	res := r.selectQ()
 	assert.Equal(t, 0, len(res.columns))
 	assert.Equal(t, 2, len(res.tuples))
 }
 
 func TestSelectQUnknown(t *testing.T) {
-	q := &query{}
-	q.columns = []*column{newColumn("", "id"), newColumn("", "str")}
-	q.tuples = []*tuple{
-		&tuple{values: []interface{}{0, "zero"}},
-		&tuple{values: []interface{}{1, "one"}},
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "str")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, "zero"}},
+			&tuple{values: []interface{}{1, "one"}},
+		},
 	}
-	res := q.selectQ("unknown")
+	res := r.selectQ("unknown")
 	assert.Equal(t, 0, len(res.columns))
 	assert.Equal(t, 2, len(res.tuples))
 }
 
 func TestSelectQProper(t *testing.T) {
-	q := &query{}
-	q.columns = []*column{newColumn("", "id"), newColumn("", "str")}
-	q.tuples = []*tuple{
-		&tuple{values: []interface{}{0, "zero"}},
-		&tuple{values: []interface{}{1, "one"}},
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "str")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, "zero"}},
+			&tuple{values: []interface{}{1, "one"}},
+		},
 	}
-	res := q.selectQ("str")
+	res := r.selectQ("str")
 	assert.Equal(t, []*column{newColumn("", "str")}, res.columns)
 	assert.Equal(t, "zero", res.tuples[0].values[0], "zero")
 	assert.Equal(t, "one", res.tuples[1].values[0], "one")
 }
 
-func TestSelectQMultiple(t *testing.T) {
-	q := &query{}
-	q.columns = []*column{newColumn("", "id"), newColumn("", "str")}
-	q.tuples = []*tuple{
-		&tuple{values: []interface{}{0, "zero"}},
-		&tuple{values: []interface{}{1, "one"}},
+func TestSelectQAll(t *testing.T) {
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "str")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, "zero"}},
+			&tuple{values: []interface{}{1, "one"}},
+		},
 	}
-	res := q.selectQ("id", "str")
-	assert.Equal(t, q, res)
+	res := r.selectQ("id", "str")
+	assert.Equal(t, r, res)
 }
 
 func TestLessThanUnknown(t *testing.T) {
-	q := &query{}
-	q.columns = []*column{newColumn("", "id")}
-	q.tuples = []*tuple{
-		&tuple{values: []interface{}{0}},
-		&tuple{values: []interface{}{1}},
+	r := &relation{
+		columns: []*column{newColumn("", "id")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0}},
+			&tuple{values: []interface{}{1}},
+		},
 	}
-	res := q.lessThan("unknown", 0)
-	assert.Equal(t, q.columns, res.columns)
+	res := r.lessThan("unknown", 0)
+	assert.Equal(t, r.columns, res.columns)
 	assert.Equal(t, 0, len(res.tuples))
 }
 
 func TestLessThanNone(t *testing.T) {
-	q := &query{}
-	q.columns = []*column{newColumn("", "id")}
-	q.tuples = []*tuple{
-		&tuple{values: []interface{}{0}},
-		&tuple{values: []interface{}{1}},
+	r := &relation{
+		columns: []*column{newColumn("", "id")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0}},
+			&tuple{values: []interface{}{1}},
+		},
 	}
-	res := q.lessThan("id", 0)
-	assert.Equal(t, q.columns, res.columns)
+	res := r.lessThan("id", 0)
+	assert.Equal(t, r.columns, res.columns)
 	assert.Equal(t, 0, len(res.tuples))
 }
 
 func TestLessThanProper(t *testing.T) {
-	q := &query{}
-	q.columns = []*column{newColumn("", "id")}
-	q.tuples = []*tuple{
-		&tuple{values: []interface{}{0}},
-		&tuple{values: []interface{}{1}},
+	r := &relation{
+		columns: []*column{newColumn("", "id")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0}},
+			&tuple{values: []interface{}{1}},
+		},
 	}
-	res := q.lessThan("id", 1)
-	assert.Equal(t, q.columns, res.columns)
+	res := r.lessThan("id", 1)
+	assert.Equal(t, r.columns, res.columns)
 	assert.Equal(t, 1, len(res.tuples))
 	assert.Equal(t, []interface{}{0}, res.tuples[0].values)
 }
 
 func TestLeftJoinLeftUnknown(t *testing.T) {
-	q := &query{}
-	q.columns = []*column{newColumn("q", "id"), newColumn("q", "name")}
-	q.tuples = []*tuple{
-		&tuple{values: []interface{}{0, "zero"}},
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, "zero"}},
+		},
 	}
 	tbl := create("TestLeftJoinLeftUnknown", []string{"id", "size"})
 	tbl.insert(0, 100)
-	res := q.leftJoin("TestLeftJoinLeftUnknown", "size")
+	res := r.leftJoin("TestLeftJoinLeftUnknown", "size")
 	assert.Equal(t, 4, len(res.columns))
 	assert.Equal(t, 0, len(res.tuples))
 }
 
 func TestLeftJoinRightUnknown(t *testing.T) {
-	q := &query{}
-	q.columns = []*column{newColumn("q", "id"), newColumn("q", "name")}
-	q.tuples = []*tuple{
-		&tuple{values: []interface{}{0, "zero"}},
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, "zero"}},
+		},
 	}
 	tbl := create("TestLeftJoinRightUnknown", []string{"id", "size"})
 	tbl.insert(0, 100)
-	res := q.leftJoin("TestLeftJoinLeftUnknown", "name")
+	res := r.leftJoin("TestLeftJoinLeftUnknown", "name")
 	assert.Equal(t, 4, len(res.columns))
 	assert.Equal(t, 0, len(res.tuples))
 }
 
 func TestLeftJoinProper(t *testing.T) {
-	q := &query{}
-	q.columns = []*column{newColumn("q", "id"), newColumn("q", "name")}
-	q.tuples = []*tuple{
-		&tuple{values: []interface{}{0, "zero"}},
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, "zero"}},
+		},
 	}
 	tbl := create("TestLeftJoinProper", []string{"id", "size"})
 	tbl.insert(0, 100)
-	res := q.leftJoin("TestLeftJoinProper", "id")
+	res := r.leftJoin("TestLeftJoinProper", "id")
 	assert.Equal(t, 4, len(res.columns))
 	assert.Equal(t, 1, len(res.tuples))
 	assert.Equal(t, []interface{}{0, "zero", 0, 100}, res.tuples[0].values)
 }
 
 func TestLeftJoinNotFound(t *testing.T) {
-	q := &query{}
-	q.columns = []*column{newColumn("q", "id"), newColumn("q", "name")}
-	q.tuples = []*tuple{
-		&tuple{values: []interface{}{0, "zero"}},
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, "zero"}},
+		},
 	}
 	tbl := create("TestLeftJoinNotFound", []string{"id", "size"})
 	tbl.insert(1, 100)
-	res := q.leftJoin("TestLeftJoinNotFound", "id")
+	res := r.leftJoin("TestLeftJoinNotFound", "id")
 	assert.Equal(t, 4, len(res.columns))
 	assert.Equal(t, 1, len(res.tuples))
 	assert.Equal(t, []interface{}{0, "zero", nil, nil}, res.tuples[0].values)
 }
 
 func TestLeftJoinNil(t *testing.T) {
-	q := &query{}
-	q.columns = []*column{newColumn("q", "id"), newColumn("q", "name")}
-	q.tuples = []*tuple{
-		&tuple{values: []interface{}{nil, "zero"}},
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{nil, "zero"}},
+		},
 	}
 	tbl := create("TestLeftJoinNotFound", []string{"id", "size"})
 	tbl.insert(nil, 100)
-	res := q.leftJoin("TestLeftJoinNotFound", "id")
+	res := r.leftJoin("TestLeftJoinNotFound", "id")
 	assert.Equal(t, 4, len(res.columns))
 	assert.Equal(t, 1, len(res.tuples))
 	assert.Equal(t, []interface{}{nil, "zero", nil, nil}, res.tuples[0].values)
