@@ -84,6 +84,20 @@ func TestFromAfterInsert(t *testing.T) {
 	assert.Equal(t, tbl.tuples, r.tuples)
 }
 
+func TestFromByRelation(t *testing.T) {
+	src := &relation{
+		columns: []*column{newColumn("TestFromByRelation", "id")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0}},
+			&tuple{values: []interface{}{1}},
+			&tuple{values: []interface{}{2}},
+		},
+	}
+	r := from(src)
+	assert.Equal(t, src.columns, r.columns)
+	assert.Equal(t, src.tuples, r.tuples)
+}
+
 func TestSelectQNone(t *testing.T) {
 	r := &relation{
 		columns: []*column{newColumn("", "id"), newColumn("", "str")},
