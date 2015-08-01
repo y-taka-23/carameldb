@@ -204,6 +204,24 @@ func TestLeftJoinLeftUnknown(t *testing.T) {
 	assert.Equal(t, 0, len(res.tuples))
 }
 
+func TestLeftJoinLeftUnknownByRelation(t *testing.T) {
+	r1 := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, "zero"}},
+		},
+	}
+	r2 := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "size")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, 100}},
+		},
+	}
+	res := r1.leftJoin(r2, "size")
+	assert.Equal(t, 4, len(res.columns))
+	assert.Equal(t, 0, len(res.tuples))
+}
+
 func TestLeftJoinRightUnknown(t *testing.T) {
 	r := &relation{
 		columns: []*column{newColumn("", "id"), newColumn("", "name")},
@@ -218,16 +236,51 @@ func TestLeftJoinRightUnknown(t *testing.T) {
 	assert.Equal(t, 0, len(res.tuples))
 }
 
-func TestLeftJoinProper(t *testing.T) {
-	r := &relation{
+func TestLeftJoinRightUnknownByRelation(t *testing.T) {
+	r1 := &relation{
 		columns: []*column{newColumn("", "id"), newColumn("", "name")},
 		tuples: []*tuple{
 			&tuple{values: []interface{}{0, "zero"}},
 		},
 	}
+	r2 := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "size")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, 100}},
+		},
+	}
+	res := r1.leftJoin(r2, "name")
+	assert.Equal(t, 4, len(res.columns))
+	assert.Equal(t, 0, len(res.tuples))
+}
+
+func TestLeftJoinProper(t *testing.T) {
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples:  []*tuple{&tuple{values: []interface{}{0, "zero"}}},
+	}
 	tbl := create("TestLeftJoinProper", []string{"id", "size"})
 	tbl.insert(0, 100)
 	res := r.leftJoin("TestLeftJoinProper", "id")
+	assert.Equal(t, 4, len(res.columns))
+	assert.Equal(t, 1, len(res.tuples))
+	assert.Equal(t, []interface{}{0, "zero", 0, 100}, res.tuples[0].values)
+}
+
+func TestLeftJoinProperByRelation(t *testing.T) {
+	r1 := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, "zero"}},
+		},
+	}
+	r2 := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "size")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, 100}},
+		},
+	}
+	res := r1.leftJoin(r2, "id")
 	assert.Equal(t, 4, len(res.columns))
 	assert.Equal(t, 1, len(res.tuples))
 	assert.Equal(t, []interface{}{0, "zero", 0, 100}, res.tuples[0].values)
@@ -248,6 +301,25 @@ func TestLeftJoinNotFound(t *testing.T) {
 	assert.Equal(t, []interface{}{0, "zero", nil, nil}, res.tuples[0].values)
 }
 
+func TestLeftJoinNotFoundByRelation(t *testing.T) {
+	r1 := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, "zero"}},
+		},
+	}
+	r2 := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "size")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{1, 100}},
+		},
+	}
+	res := r1.leftJoin(r2, "id")
+	assert.Equal(t, 4, len(res.columns))
+	assert.Equal(t, 1, len(res.tuples))
+	assert.Equal(t, []interface{}{0, "zero", nil, nil}, res.tuples[0].values)
+}
+
 func TestLeftJoinNil(t *testing.T) {
 	r := &relation{
 		columns: []*column{newColumn("", "id"), newColumn("", "name")},
@@ -258,6 +330,25 @@ func TestLeftJoinNil(t *testing.T) {
 	tbl := create("TestLeftJoinNotFound", []string{"id", "size"})
 	tbl.insert(nil, 100)
 	res := r.leftJoin("TestLeftJoinNotFound", "id")
+	assert.Equal(t, 4, len(res.columns))
+	assert.Equal(t, 1, len(res.tuples))
+	assert.Equal(t, []interface{}{nil, "zero", nil, nil}, res.tuples[0].values)
+}
+
+func TestLeftJoinNilByRelation(t *testing.T) {
+	r1 := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{nil, "zero"}},
+		},
+	}
+	r2 := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "size")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{nil, 100}},
+		},
+	}
+	res := r1.leftJoin(r2, "id")
 	assert.Equal(t, 4, len(res.columns))
 	assert.Equal(t, 1, len(res.tuples))
 	assert.Equal(t, []interface{}{nil, "zero", nil, nil}, res.tuples[0].values)
