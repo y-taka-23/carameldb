@@ -125,34 +125,28 @@ func (r *relation) leftJoin(x interface{}, colName string) *relation {
 	newCols := []*column{}
 	newCols = append(newCols, r.columns...)
 	newCols = append(newCols, j.columns...)
-	rIdx, jIdx := r.findColumn(colName), j.findColumn(colName)
-	if len(r.columns) <= rIdx || len(j.columns) <= jIdx {
+	rIdx := r.findColumn(colName)
+	if len(r.columns) <= rIdx {
 		return newRelation(newCols, []*tuple{})
 	}
 	newTups := []*tuple{}
 	for _, rTup := range r.tuples {
-		if len(rTup.values) <= rIdx {
-			continue
-		}
 		keyVal := rTup.values[rIdx]
-		vals := []interface{}{}
-		vals = append(vals, rTup.values...)
-		// join at non-nil values only
-		if keyVal != nil {
-			for _, jTup := range j.tuples {
-				if len(jTup.values) <= jIdx {
-					continue
-				}
-				if jTup.values[jIdx] == keyVal {
-					vals = append(vals, jTup.values...)
-					break // join at most one tuple from the rightside table
-				}
+		jRel := j.equal(colName, keyVal)
+		if len(jRel.tuples) == 0 {
+			vals := []interface{}{}
+			vals = append(vals, rTup.values...)
+			for len(vals) < len(newCols) {
+				vals = append(vals, nil)
 			}
+			newTups = append(newTups, newTuple(vals))
 		}
-		for len(vals) < len(newCols) {
-			vals = append(vals, nil)
+		for _, jTup := range jRel.tuples {
+			vals := []interface{}{}
+			vals = append(vals, rTup.values...)
+			vals = append(vals, jTup.values...)
+			newTups = append(newTups, newTuple(vals))
 		}
-		newTups = append(newTups, newTuple(vals))
 	}
 	return newRelation(newCols, newTups)
 }
