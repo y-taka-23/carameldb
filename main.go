@@ -173,7 +173,21 @@ func (r *relation) lessThan(colName string, n int) *relation {
 }
 
 func (r *relation) equal(colName string, key interface{}) *relation {
-	return nil
+	// null check should be by isNull condition
+	if key == nil {
+		return newRelation(r.columns, []*tuple{})
+	}
+	idx := r.findColumn(colName)
+	if idx >= len(r.columns) {
+		return newRelation(r.columns, []*tuple{})
+	}
+	newTups := []*tuple{}
+	for _, tup := range r.tuples {
+		if tup.values[idx] == key {
+			newTups = append(newTups, tup)
+		}
+	}
+	return newRelation(r.columns, newTups)
 }
 
 func (r *relation) String() string {
