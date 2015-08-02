@@ -172,6 +172,10 @@ func (r *relation) lessThan(colName string, n int) *relation {
 	return newRelation(r.columns, newTups)
 }
 
+func (r *relation) equal(colName string, key interface{}) *relation {
+	return nil
+}
+
 func (r *relation) String() string {
 	var buf bytes.Buffer
 	for _, c := range r.columns {

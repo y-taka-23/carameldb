@@ -190,6 +190,59 @@ func TestLessThanProper(t *testing.T) {
 	assert.Equal(t, []interface{}{0}, res.tuples[0].values)
 }
 
+func TestEqualUnknown(t *testing.T) {
+	r := &relation{
+		columns: []*column{newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{"zero"}},
+			&tuple{values: []interface{}{"one"}},
+		},
+	}
+	res := r.equal("unknown", "foo")
+	assert.Equal(t, r.columns, res.columns)
+	assert.Equal(t, 0, len(res.tuples))
+}
+
+func TesTEqualNone(t *testing.T) {
+	r := &relation{
+		columns: []*column{newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{"zero"}},
+			&tuple{values: []interface{}{"one"}},
+		},
+	}
+	res := r.equal("name", "two")
+	assert.Equal(t, r.columns, res.columns)
+	assert.Equal(t, 0, len(res.tuples))
+}
+
+func TestEqualTypeMismatch(t *testing.T) {
+	r := &relation{
+		columns: []*column{newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{"zero"}},
+			&tuple{values: []interface{}{"one"}},
+		},
+	}
+	res := r.equal("name", 0)
+	assert.Equal(t, r.columns, res.columns)
+	assert.Equal(t, 0, len(res.tuples))
+}
+
+func TestEqualProper(t *testing.T) {
+	r := &relation{
+		columns: []*column{newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{"zero"}},
+			&tuple{values: []interface{}{"one"}},
+		},
+	}
+	res := r.equal("name", "zero")
+	assert.Equal(t, r.columns, res.columns)
+	assert.Equal(t, 1, len(res.tuples))
+	assert.Equal(t, []interface{}{"zero"}, res.tuples[0].values)
+}
+
 func TestLeftJoinLeftUnknown(t *testing.T) {
 	r := &relation{
 		columns: []*column{newColumn("", "id"), newColumn("", "name")},
