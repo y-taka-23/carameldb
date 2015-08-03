@@ -184,6 +184,10 @@ func (r *relation) equal(colName string, key interface{}) *relation {
 	return newRelation(r.columns, newTups)
 }
 
+func (r *relation) orderBy(colName string) *relation {
+	return nil
+}
+
 func (r *relation) String() string {
 	var buf bytes.Buffer
 	for _, c := range r.columns {

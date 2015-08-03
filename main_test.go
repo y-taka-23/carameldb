@@ -243,6 +243,92 @@ func TestEqualProper(t *testing.T) {
 	assert.Equal(t, []interface{}{"zero"}, res.tuples[0].values)
 }
 
+func TestOrderByUnknown(t *testing.T) {
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, "zero"}},
+			&tuple{values: []interface{}{1, "one"}},
+			&tuple{values: []interface{}{2, "two"}},
+		},
+	}
+	res := r.orderBy("unknown")
+	assert.Equal(t, r, res)
+}
+
+func TestOrderByNone(t *testing.T) {
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples:  []*tuple{},
+	}
+	res := r.orderBy("id")
+	assert.Equal(t, 0, len(res.tuples))
+}
+
+func TestOrderByAlreadySortedByInt(t *testing.T) {
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, "zero"}},
+			&tuple{values: []interface{}{1, "one"}},
+			&tuple{values: []interface{}{2, "two"}},
+		},
+	}
+	res := r.orderBy("id")
+	assert.Equal(t, 3, len(res.tuples))
+	assert.Equal(t, []interface{}{0, "zero"}, len(res.tuples[0].values))
+	assert.Equal(t, []interface{}{1, "one"}, len(res.tuples[1].values))
+	assert.Equal(t, []interface{}{2, "two"}, len(res.tuples[2].values))
+}
+
+func TestOrderByAlreadySortedByString(t *testing.T) {
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{1, "one"}},
+			&tuple{values: []interface{}{2, "two"}},
+			&tuple{values: []interface{}{0, "zero"}},
+		},
+	}
+	res := r.orderBy("name")
+	assert.Equal(t, 3, len(res.tuples))
+	assert.Equal(t, []interface{}{1, "one"}, len(res.tuples[0].values))
+	assert.Equal(t, []interface{}{2, "two"}, len(res.tuples[1].values))
+	assert.Equal(t, []interface{}{0, "zero"}, len(res.tuples[2].values))
+}
+
+func TestOrderByProperByInt(t *testing.T) {
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{1, "one"}},
+			&tuple{values: []interface{}{2, "two"}},
+			&tuple{values: []interface{}{0, "zero"}},
+		},
+	}
+	res := r.orderBy("id")
+	assert.Equal(t, 3, len(res.tuples))
+	assert.Equal(t, []interface{}{0, "zero"}, len(res.tuples[0].values))
+	assert.Equal(t, []interface{}{1, "one"}, len(res.tuples[1].values))
+	assert.Equal(t, []interface{}{2, "two"}, len(res.tuples[2].values))
+}
+
+func TestOrderByProperByString(t *testing.T) {
+	r := &relation{
+		columns: []*column{newColumn("", "id"), newColumn("", "name")},
+		tuples: []*tuple{
+			&tuple{values: []interface{}{0, "zero"}},
+			&tuple{values: []interface{}{1, "one"}},
+			&tuple{values: []interface{}{2, "two"}},
+		},
+	}
+	res := r.orderBy("name")
+	assert.Equal(t, 3, len(res.tuples))
+	assert.Equal(t, []interface{}{1, "one"}, len(res.tuples[0].values))
+	assert.Equal(t, []interface{}{2, "two"}, len(res.tuples[1].values))
+	assert.Equal(t, []interface{}{0, "zero"}, len(res.tuples[2].values))
+}
+
 func TestLeftJoinLeftUnknown(t *testing.T) {
 	r := &relation{
 		columns: []*column{newColumn("", "id"), newColumn("", "name")},
