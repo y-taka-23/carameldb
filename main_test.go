@@ -276,9 +276,9 @@ func TestOrderByAlreadySortedByInt(t *testing.T) {
 	}
 	res := r.orderBy("id")
 	assert.Equal(t, 3, len(res.tuples))
-	assert.Equal(t, []interface{}{0, "zero"}, len(res.tuples[0].values))
-	assert.Equal(t, []interface{}{1, "one"}, len(res.tuples[1].values))
-	assert.Equal(t, []interface{}{2, "two"}, len(res.tuples[2].values))
+	assert.Equal(t, []interface{}{0, "zero"}, res.tuples[0].values)
+	assert.Equal(t, []interface{}{1, "one"}, res.tuples[1].values)
+	assert.Equal(t, []interface{}{2, "two"}, res.tuples[2].values)
 }
 
 func TestOrderByAlreadySortedByString(t *testing.T) {
@@ -292,9 +292,9 @@ func TestOrderByAlreadySortedByString(t *testing.T) {
 	}
 	res := r.orderBy("name")
 	assert.Equal(t, 3, len(res.tuples))
-	assert.Equal(t, []interface{}{1, "one"}, len(res.tuples[0].values))
-	assert.Equal(t, []interface{}{2, "two"}, len(res.tuples[1].values))
-	assert.Equal(t, []interface{}{0, "zero"}, len(res.tuples[2].values))
+	assert.Equal(t, []interface{}{1, "one"}, res.tuples[0].values)
+	assert.Equal(t, []interface{}{2, "two"}, res.tuples[1].values)
+	assert.Equal(t, []interface{}{0, "zero"}, res.tuples[2].values)
 }
 
 func TestOrderByProperByInt(t *testing.T) {
@@ -308,9 +308,9 @@ func TestOrderByProperByInt(t *testing.T) {
 	}
 	res := r.orderBy("id")
 	assert.Equal(t, 3, len(res.tuples))
-	assert.Equal(t, []interface{}{0, "zero"}, len(res.tuples[0].values))
-	assert.Equal(t, []interface{}{1, "one"}, len(res.tuples[1].values))
-	assert.Equal(t, []interface{}{2, "two"}, len(res.tuples[2].values))
+	assert.Equal(t, []interface{}{0, "zero"}, res.tuples[0].values)
+	assert.Equal(t, []interface{}{1, "one"}, res.tuples[1].values)
+	assert.Equal(t, []interface{}{2, "two"}, res.tuples[2].values)
 }
 
 func TestOrderByProperByString(t *testing.T) {
@@ -324,9 +324,9 @@ func TestOrderByProperByString(t *testing.T) {
 	}
 	res := r.orderBy("name")
 	assert.Equal(t, 3, len(res.tuples))
-	assert.Equal(t, []interface{}{1, "one"}, len(res.tuples[0].values))
-	assert.Equal(t, []interface{}{2, "two"}, len(res.tuples[1].values))
-	assert.Equal(t, []interface{}{0, "zero"}, len(res.tuples[2].values))
+	assert.Equal(t, []interface{}{1, "one"}, res.tuples[0].values)
+	assert.Equal(t, []interface{}{2, "two"}, res.tuples[1].values)
+	assert.Equal(t, []interface{}{0, "zero"}, res.tuples[2].values)
 }
 
 func TestLeftJoinLeftUnknown(t *testing.T) {
