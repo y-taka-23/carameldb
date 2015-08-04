@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"sort"
 )
 
 func main() {
@@ -184,8 +185,46 @@ func (r *relation) equal(colName string, key interface{}) *relation {
 	return newRelation(r.columns, newTups)
 }
 
+type tupleSorter struct {
+	tuples  []*tuple
+	compare func(t1, t2 *tuple) bool
+}
+
+func (ts *tupleSorter) Len() int {
+	return len(ts.tuples)
+}
+
+func (ts *tupleSorter) Swap(i, j int) {
+	ts.tuples[i], ts.tuples[j] = ts.tuples[j], ts.tuples[i]
+}
+
+func (ts *tupleSorter) Less(i, j int) bool {
+	return ts.compare(ts.tuples[i], ts.tuples[j])
+}
+
 func (r *relation) orderBy(colName string) *relation {
-	return nil
+	idx := r.findColumn(colName)
+	if idx >= len(r.columns) {
+		return r
+	}
+	compare := func(t1, t2 *tuple) bool {
+		n1, ok1 := t1.values[idx].(int)
+		n2, ok2 := t2.values[idx].(int)
+		if ok1 && ok2 {
+			return n1 < n2
+		}
+		s1, ok1 := t1.values[idx].(string)
+		s2, ok2 := t2.values[idx].(string)
+		if ok1 && ok2 {
+			return s1 < s2
+		}
+		return true
+	}
+	newTups := []*tuple{}
+	newTups = append(newTups, r.tuples...)
+	ts := &tupleSorter{tuples: newTups, compare: compare}
+	sort.Sort(ts)
+	return newRelation(r.columns, ts.tuples)
 }
 
 func (r *relation) String() string {
