@@ -227,6 +227,12 @@ func (r *relation) orderBy(colName string) *relation {
 	return newRelation(r.columns, ts.tuples)
 }
 
+type aggregator func([]interface{}) interface{}
+
+func (r *relation) groupBy(colName string, aggs ...aggregator) *relation {
+	return nil
+}
+
 func (r *relation) String() string {
 	var buf bytes.Buffer
 	for _, c := range r.columns {
