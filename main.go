@@ -227,7 +227,11 @@ func (r *relation) orderBy(colName string) *relation {
 	return newRelation(r.columns, ts.tuples)
 }
 
-type aggregator func([]interface{}) interface{}
+type aggregator interface {
+	srcColName() string
+	tgtColName() string
+	compute() func(xs []interface{}) interface{}
+}
 
 func (r *relation) groupBy(colName string, aggs ...aggregator) *relation {
 	return nil
