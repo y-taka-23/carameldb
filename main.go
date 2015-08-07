@@ -228,9 +228,10 @@ func (r *relation) orderBy(colName string) *relation {
 }
 
 type aggregator interface {
-	srcColName() string
-	tgtColName() string
-	compute() func(xs []interface{}) interface{}
+	name() string
+	add()
+	result() interface{}
+	reset()
 }
 
 func (r *relation) groupBy(colName string, aggs ...aggregator) *relation {
